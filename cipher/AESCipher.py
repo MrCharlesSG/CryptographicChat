@@ -1,6 +1,6 @@
 import pickle
-from base64 import b64decode, b64encode
-from hashlib import md5
+from base64 import b64encode, b64decode
+from hashlib import sha256
 
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
@@ -9,7 +9,7 @@ from Crypto.Util.Padding import pad, unpad
 
 class AESCipher:
     def __init__(self, key):
-        self.key = md5(key.encode('utf8')).digest()
+        self.key = sha256(key.encode('utf8')).digest()
 
     @staticmethod
     def generateKey():
@@ -41,6 +41,7 @@ class AESCipher:
         decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size)
 
         return pickle.loads(decrypted_data)
+
 
 
 """

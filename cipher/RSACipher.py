@@ -1,7 +1,9 @@
 from base64 import b64encode, b64decode
 
 from Crypto.Cipher import PKCS1_OAEP
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
+from Crypto.Signature import pkcs1_15
 
 
 class RSACipher:
@@ -41,18 +43,41 @@ class RSACipher:
         raw = b64decode(ciphertext)
         cipher = PKCS1_OAEP.new(RSA.import_key(key))
         plaintext = cipher.decrypt(raw)
-        return plaintext.decode()
+        return plaintext.decode('utf-8')
 
+    @staticmethod
+    def sign(message, private_key):
+        """
+        Sign a message using the private key.
+        """
+        key = RSA.import_key(b64decode(private_key))
+        h = SHA256.new(message.encode())
+        signature = pkcs1_15.new(key).sign(h)
+        return b64encode(signature).decode('utf-8')
+
+    @staticmethod
+    def verify_signature(message, signature, public_key):
+        """
+        Verify a signed message using the public key.
+        """
+        key = RSA.import_key(b64decode(public_key))
+        h = SHA256.new(message.encode())
+        signature = b64decode(signature)
+        try:
+            pkcs1_15.new(key).verify(h, signature)
+            return True
+        except (ValueError, TypeError):
+            return False
 
 """
-private_key, public_key = RSACipher.generate_keys()
-print(private_key)
+private_key_to_store, public_key = RSACipher.generate_keys()
+print(private_key_to_store)
 print(public_key)
 # Crear una instancia de RSACipher
-private_key, public_key = RSACipher.generate_keys()
-print("Private key", private_key.__str__())
+private_key_to_store, public_key = RSACipher.generate_keys()
+print("Private key", private_key_to_store.__str__())
 print("Public key", public_key.__str__())
-rsa_cipher = RSACipher(private_key, public_key)
+rsa_cipher = RSACipher(private_key_to_store, public_key)
 
 # Cifrar un mensaje
 message = "Este es un mensaje secreto"
@@ -62,4 +87,17 @@ print("Ciphertext:", ciphertext)
 # Descifrar el mensaje
 decrypted_message = rsa_cipher.decrypt(ciphertext)
 print("Decrypted message:", decrypted_message)
+
+
+# Generate keys
+prk, pbk = RSACipher.generate_keys()
+
+# Sign a message with the private key
+message = "Hola que tal"
+signature = RSACipher.sign(message, prk)
+
+# Verify the signature with the public key
+is_valid = RSACipher.verify_signature(message, signature, pbk)
+
+print("Signature is valid:", is_valid)
 """
