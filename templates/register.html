@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head><title>Register</title></head>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+    /* Estilo general de la página */
+    body {
+        background-color: #0f0f0f;
+        color: #00ffcc;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        font-family: 'Orbitron', sans-serif;
+    }
+
+    /* Título */
+    h2 {
+        color: #ff00ff;
+        text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff;
+        font-size: 2.5em;
+    }
+
+    /* Estilos del formulario */
+    form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.6);
+        padding: 20px;
+        border-radius: 10px;
+        border: 2px solid #00ffcc;
+        box-shadow: 0 0 20px #00ffcc, 0 0 40px #ff00ff;
+    }
+
+    /* Estilo del campo de entrada */
+    input{
+        background-color: #1a1a1a;
+        border: 2px solid #00ffcc;
+        color: #00ffcc;
+        padding: 10px;
+        margin-bottom: 10px;
+        font-size: 1em;
+        border-radius: 5px;
+        outline: none;
+        width: 100%;
+        font-family: 'Orbitron', sans-serif;
+        box-shadow: 0 0 5px #00ffcc;
+    }
+
+    /* Efecto de entrada en hover/focus */
+    input:focus {
+        border-color: #ff00ff;
+        box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+    }
+
+    /* Botón de enviar */
+    button {
+        background-color: #ff00ff;
+        color: #0f0f0f;
+        font-size: 1em;
+        font-weight: bold;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-family: 'Orbitron', sans-serif;
+        box-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
+        transition: 0.3s;
+    }
+
+    button:hover {
+        background-color: #00ffcc;
+        color: #000;
+        box-shadow: 0 0 15px #00ffcc, 0 0 30px #00ffcc;
+    }
+
+    /* Enlace a registro */
+    a {
+        color: #00ffcc;
+        margin-top: 15px;
+        text-decoration: none;
+        font-size: 1em;
+    }
+
+    a:hover {
+        color: #ff00ff;
+        text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff;
+    }
+</style>
+<body>
+<h2>Register</h2>
+<form id="registerForm">
+    <input type="text" name="username" placeholder="Username" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit">Register</button>
+</form>
+<a href="{{ url_for('login') }}">Go to Login</a>
+
+<script>
+    document.getElementById("registerForm").onsubmit = async function (e) {
+        e.preventDefault();
+        let formData = new FormData(this);
+        let response = await fetch("{{ url_for('api_register') }}", { method: "POST", body: formData });
+        if (response.ok) {
+            window.location.href = "{{ url_for('register_repeat_password') }}";
+        }
+    }
+</script>
+</body>
+</html>

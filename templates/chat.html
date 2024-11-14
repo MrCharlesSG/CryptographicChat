@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+
+        :root {
+            --neon-blue: #00ffff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --dark-bg: #0a0a0a;
+            --darker-bg: #050505;
+        }
+
+        body {
+            font-family: 'Orbitron', sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--neon-blue);
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--darker-bg);
+            border: 2px solid var(--neon-blue);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
+
+        h2, h3 {
+            color: var(--neon-pink);
+            text-shadow: 0 0 5px var(--neon-pink);
+        }
+
+        button {
+            background-color: var(--darker-bg);
+            color: var(--neon-green);
+            border: 2px solid var(--neon-green);
+            padding: 10px 20px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: var(--neon-green);
+            color: var(--darker-bg);
+            box-shadow: 0 0 10px var(--neon-green);
+        }
+
+        input[type="text"] {
+            background-color: var(--darker-bg);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 10px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 16px;
+            width: 70%;
+            margin-right: 10px;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background-color: rgba(0, 255, 255, 0.1);
+            border: 1px solid var(--neon-blue);
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-list {
+            margin-bottom: 20px;
+            padding-right: 10px;
+        }
+
+        .chat-list::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .chat-list::-webkit-scrollbar-thumb {
+            background-color: var(--neon-pink);
+        }
+
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: rgba(255, 0, 255, 0.1);
+        }
+
+        .message strong {
+            color: var(--neon-green);
+        }
+
+        .message p {
+            margin: 5px 0 0;
+            color: #ffffff;
+        }
+
+        .sendMessageForm {
+            display: flex;
+            margin-top: 10px;
+        }
+
+        .sendMessageForm input[type="text"] {
+            flex-grow: 1;
+        }
+
+        #createChatForm {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        #createChatForm input[type="text"] {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="chat-header">
+        <h2>Cryptographic Chat</h2>
+        <div>
+            <p>Logged in as: <span style="color: var(--neon-green);">{{ username }}</span></p>
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <h3>Create a new chat</h3>
+    <form id="createChatForm">
+        <input type="text" id="receiverUsername" name="username" placeholder="Enter recipient username" required>
+        <button type="submit">Create Chat</button>
+    </form>
+
+    {% if chats %}
+    <h3>Your Chats:</h3>
+    <div class="chat-list">
+        <ul>
+            {% for chat_id, chat in chats.items() %}
+            <li>
+                <strong>Chat with {{ chat.other_username }}</strong><br>
+                <ul>
+                    {% for message in chat.messages %}
+                    <li class="message">
+                        <strong>{{ message.sender }} ({{ message.date }}):</strong>
+                        <p>{{ message.text }}</p>
+                    </li>
+                    {% endfor %}
+                </ul>
+
+                <form class="sendMessageForm" data-chat-id="{{ chat.chat_id }}">
+                    <input type="text" name="messageText" placeholder="Enter your message" required>
+                    <button type="submit">Send</button>
+                </form>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
+    <p>No chats available.</p>
+    {% endif %}
+</div>
+
+<script>
+    const socket = io();
+
+    socket.on("update-chats", (data) => {
+        console.log("Received updated chats", data);
+        window.location.reload();
+    });
+
+    socket.on("update-messages", (data) => {
+        console.log("Received updated messages for chat", data.chat_id);
+        window.location.reload();
+    });
+
+    document.getElementById("logoutButton").onclick = async function () {
+        const response = await fetch("{{ url_for('logout') }}", {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (response.ok) {
+            window.location.href = "{{ url_for('login') }}";
+        } else {
+            alert("Failed to logout.");
+        }
+    };
+
+    document.getElementById("createChatForm").onsubmit = async function (e) {
+        e.preventDefault();
+        const receiverUsername = document.getElementById("receiverUsername").value;
+
+        const response = await fetch("{{ url_for('create_chat') }}", {
+            method: "POST",
+            body: new URLSearchParams({
+                "username": receiverUsername
+            })
+        });
+
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            alert("Failed to create chat. Please check the username.");
+        }
+    };
+
+    document.querySelectorAll('.sendMessageForm').forEach(form => {
+        form.onsubmit = async function (e) {
+            e.preventDefault();
+            const chatId = form.getAttribute("data-chat-id");
+            const messageText = form.querySelector('input[name="messageText"]').value;
+
+            const response = await fetch("{{ url_for('send_message') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    "chat_id": chatId,
+                    "text": messageText
+                })
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert("Failed to send message.");
+            }
+        };
+    });
+</script>
+</body>
+</html>
