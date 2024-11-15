@@ -31,13 +31,11 @@ class ServerAuthService:
         """
         decrypted_username = RSACipher.decrypt(encrypted_username, server_private_key)
         user = UserRepository.getUserByUsername(decrypted_username)
-
-        encrypted_public_key = (AESCipher(user.get_decrypted_server_enc_key(server_private_key))
-                                .encrypt(user.public_key))
+        aes_user = AESCipher(user.get_decrypted_server_enc_key(server_private_key))
+        encrypted_public_key = aes_user.encrypt(user.public_key)
         enc_key = RSACipher.encrypt(user.get_decrypted_server_enc_key(server_private_key), user.public_key)
 
-        encrypted_by_server_username = (AESCipher(user.get_decrypted_server_enc_key(server_private_key))
-                                        .encrypt(decrypted_username))
+        encrypted_by_server_username = aes_user.encrypt(decrypted_username)
 
         user_pbk_for_server = PBKDF2Cipher(user.get_decrypted_server_enc_key(server_private_key),
                                            server_private_key).derive()

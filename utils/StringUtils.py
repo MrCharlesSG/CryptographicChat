@@ -52,3 +52,17 @@ def chat_metadata_from_str(chat_metadata):
 
     receiver, chat_id = parts
     return receiver, chat_id
+
+
+def chat_metadata_to_receive_to_str(chat_metadata, user_sender_public_key):
+    return f"{chat_metadata}|{user_sender_public_key}"
+
+
+def chat_metadata_to_receive_from_str(chat_metadata):
+    parts = chat_metadata.split("|")
+
+    if len(parts) != 3:
+        raise ValueError("Formato chat metadata to receive incorrecto")
+
+    receiver, chat_id, user_sender_public_key = parts
+    return receiver, chat_id, user_sender_public_key

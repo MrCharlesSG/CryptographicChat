@@ -10,19 +10,20 @@ class MessageRepository:
         for message in messages:
             if message.chat_id == chat_id:
                 message_to_return = {
-                    "message_info": message.message_info
+                    "message_info": message.message_info,
+                    "signature": message.signature
                 }
                 messages_to_return.append(message_to_return)
         return messages_to_return
 
     @staticmethod
-    def createMessage(chat_id, message_info) -> Message:
+    def createMessage(chat_id, message_info, signature) -> Message:
         """store message in db...+
             - ID
             - Message_Date_Sender (encrypted with EncKey)
             - Chat ID
             - Signature (MAC)
         """
-        new_message = Message(chat_id, message_info)
+        new_message = Message(chat_id, message_info, signature)
         add_message(new_message)
         return new_message

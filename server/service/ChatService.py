@@ -5,7 +5,7 @@ from server.config.dummy_db import server_private_key
 from server.dal.ChatRepository import ChatRepository
 from server.dal.MessageRepository import MessageRepository
 from server.dal.UserRepository import UserRepository
-from utils.StringUtils import chat_metadata_from_str, chat_metadata_to_str
+from utils.StringUtils import chat_metadata_from_str, chat_metadata_to_str, chat_metadata_to_receive_to_str
 
 
 class ServerChatService:
@@ -85,6 +85,7 @@ class ServerChatService:
         1. decrypt sender
         2. get user_sender by username
         3. decrypt metadata
+        4. check signature
         4. find chat and user_sender and check if chat is of users
         5. decrypt message and encrypt for receiver
         6. store message
@@ -101,24 +102,23 @@ class ServerChatService:
         if user_receiver is None:
             raise Exception("User receiver does not exists")
 
-        aes_of_receiver = AESCipher(user_receiver.get_decrypted_server_enc_key(server_private_key))
-        user1_pbk_for_server = PBKDF2Cipher(user_sender.get_decrypted_server_enc_key(),
-                                            server_private_key).derive()
-        user2_pbk_for_server = PBKDF2Cipher(user_receiver.get_decrypted_server_enc_key(),
-                                            server_private_key).derive()
-
-        print("user1 pbk server ", user1_pbk_for_server)
-        print("user2 pbk server ", user2_pbk_for_server)
         if not ChatRepository.chat_exists_by_id(chat_id):
             raise Exception("Chat does not exists")
 
         message = aes_of_sender.decrypt(message_encrypted)
-        new_message = MessageRepository.createMessage(chat_id, message)
 
+        if not RSACipher.verify_signature(message, message_signature, user_sender.public_key):
+            raise Exception("Message has suffer violation, or the sender is not the right one")
+
+        new_message = MessageRepository.createMessage(chat_id, message, message_signature)
+
+        aes_of_receiver = AESCipher(user_receiver.get_decrypted_server_enc_key(server_private_key))
         new_message_for_receiver = aes_of_receiver.encrypt(new_message.message_info)
-        meta_data_for_receiver = aes_of_receiver.encrypt(meta_data_decrypted)
+        meta_data_to_receive = chat_metadata_to_receive_to_str(meta_data_decrypted, user_sender.public_key)
+        meta_data_for_receiver = aes_of_receiver.encrypt(meta_data_to_receive)
 
         meta_data_for_sender = chat_metadata_to_str(user_sender.username, chat_id)
+        meta_data_for_sender = chat_metadata_to_receive_to_str(meta_data_for_sender, user_sender.public_key)
         meta_data_for_sender = aes_of_sender.encrypt(meta_data_for_sender)
 
         return {
@@ -126,11 +126,13 @@ class ServerChatService:
             "receiver_username": user_receiver.username,
             "receiver": {
                 "message": new_message_for_receiver,
-                "meta_data": meta_data_for_receiver
+                "meta_data": meta_data_for_receiver,
+                "signature": message_signature
             },
             "sender": {
                 "message": message_encrypted,
-                "meta_data": meta_data_for_sender
+                "meta_data": meta_data_for_sender,
+                "signature": message_signature
             }
         }
 

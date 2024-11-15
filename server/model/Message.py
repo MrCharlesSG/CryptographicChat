@@ -6,7 +6,8 @@ from utils.StringUtils import message_info_to_str
 
 
 class Message:
-    def __init__(self, chat_id, message_info):
+    def __init__(self, chat_id, message_info, signature):
+        self.signature = signature
         self.id = str(os.urandom(8).hex())
         self.message_info = message_info
         self.chat_id = chat_id
@@ -22,13 +23,16 @@ class Message:
             "id": self.id,
             "chat_id": self.chat_id,
             "message_info": self.message_info,
+            "signature": self.signature
         }
 
-    def from_dict(data):
+    @staticmethod
+    def from_dict(data_in_dic):
         message = Message.__new__(Message)
-        message.id = data["id"]
-        message.chat_id = data["chat_id"]
-        message.message_info = data["message_info"]
+        message.id = data_in_dic["id"]
+        message.chat_id = data_in_dic["chat_id"]
+        message.message_info = data_in_dic["message_info"]
+        message.signature = data_in_dic["signature"]
         return message
     def get_string(self):
         return f"{self.signature}|{self.date}|{self.text}|{self.sender}|{self.chatID}"

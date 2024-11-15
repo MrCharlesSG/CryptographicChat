@@ -220,7 +220,7 @@ def send_message():
     if chat_with_id is not None:
         to_send = ClientChatService.send_message(
             server_public_key, session["username"], chat_with_id.other_username, chat_id,
-            text, chat_with_id.enc_key, session["server_enc_key"]
+            text, chat_with_id.enc_key, session["server_enc_key"], session["private_key_to_store"]
         )
         print("sending message ", to_send)
         response = requests.post(f"{API_SERVER_URL}/api/new-message", json=to_send)

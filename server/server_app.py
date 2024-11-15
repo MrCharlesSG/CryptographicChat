@@ -67,9 +67,10 @@ def api_new_message():
     message_header = data.get("message_header")
     chat_metadata = data.get("chat_metadata")
     message = data.get("message")
+    message_signature = data.get("signature")
     if message_header and chat_metadata and message:
         print("Receiuve message ", chat_metadata)
-        message = ServerChatService.send_message(message_header, chat_metadata, message, None)
+        message = ServerChatService.send_message(message_header, chat_metadata, message, message_signature)
         print("The response ", message)
 
         receiver_username = message["receiver_username"]

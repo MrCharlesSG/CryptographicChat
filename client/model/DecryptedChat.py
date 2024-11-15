@@ -1,4 +1,5 @@
 from cipher.AESCipher import AESCipher
+from cipher.RSACipher import RSACipher
 from server.model.User import User
 from utils.StringUtils import message_info_from_str
 
@@ -10,10 +11,24 @@ class DecryptedMessage:
         self.text = text
 
     @staticmethod
-    def create_new_message(aes: AESCipher, message_info):
+    def create_new_message(aes: AESCipher, message_info, user_public_key, participant_username,
+                           participant_pbk, signature):
         decrypted_message_info = aes.decrypt(message_info)
         text, sender, date = message_info_from_str(decrypted_message_info)
+        DecryptedMessage.check_message_integrity(sender, message_info, user_public_key, participant_username,
+                                                 participant_pbk, signature)
         return DecryptedMessage(text, sender, date)
+
+    @staticmethod
+    def check_message_integrity(sender, message_info, user_public_key, participant_username,
+                                participant_pbk, signature):
+
+        if sender == participant_username:
+            is_correct = RSACipher.verify_signature(message_info, signature, participant_pbk)
+        else:
+            is_correct = RSACipher.verify_signature(message_info, signature, user_public_key)
+        if not is_correct:
+            raise Exception("There has been a modification in the messages")
 
     def to_dict(self):
         """Convert message to dictionary."""
@@ -30,7 +45,7 @@ class DecryptedMessage:
 
 
 class DecryptedChat:
-    def __init__(self, chat_from_server, server_enc_key):
+    def __init__(self, chat_from_server, server_enc_key, user_pbk):
         print(chat_from_server)
         chat_info_from_server = chat_from_server["chat_info"]
         server_aes = AESCipher(server_enc_key)
@@ -46,7 +61,10 @@ class DecryptedChat:
         if "messages" in chat_from_server:
             messages_from_server = chat_from_server["messages"]
             for message_from_server in messages_from_server:
-                self.messages.append(DecryptedMessage.create_new_message(self.aes, message_from_server["message_info"]))
+                self.messages.append(DecryptedMessage.create_new_message(
+                    self.aes, message_from_server["message_info"], user_pbk, self.other_username,
+                    self.other_pbk, message_from_server["signature"]
+                ))
 
     def add_new_message(self, text, sender, date):
         self.messages.append(DecryptedMessage(text, sender, date))

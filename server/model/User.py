@@ -66,6 +66,7 @@ class User:
         user.public_key = data["public_key"]
         user.private_key_to_store = data["private_key_to_store"]
         user.server_enc_key = data["server_enc_key"]
+        user.decrypted_server_enc_key = None
         if "decrypted_server_enc_key" in data:
             user.decrypted_server_enc_key = data["decrypted_server_enc_key"]
         return user

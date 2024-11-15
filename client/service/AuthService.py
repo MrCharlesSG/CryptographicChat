@@ -1,13 +1,12 @@
 from cipher.AESCipher import AESCipher
 from cipher.RSACipher import RSACipher
 from client.model.DecryptedChat import DecryptedChat
-from server.config.dummy_db import server_private_key
 from utils.StringUtils import credentials_to_str
 
 
 class ClientAuthService:
     @staticmethod
-    def send_login(username, server_public_key):  #encrypted with spbk
+    def send_login(username, server_public_key):
         """
         1. encrypt username with spbk
         2. send to server
@@ -21,7 +20,7 @@ class ClientAuthService:
         }
 
     @staticmethod
-    def receive_login(returned_from_server, password, server_public_key):  #encrypted with spbk
+    def receive_login(returned_from_server, password, server_public_key):
         """
         receive
             PrK (encrypted with password),
@@ -42,19 +41,19 @@ class ClientAuthService:
         if not RSACipher.verify_signature(prk_from_server, signature, server_public_key):
             raise Exception("Response was corrupted")
 
-        from_server_prk = AESCipher(password).decrypt(prk_from_server)
-        from_server_enc_key = RSACipher().decrypt(enc_key_from_server, from_server_prk)
-        from_server_pbk = AESCipher(from_server_enc_key).decrypt(pbk_from_server)
+        user_private_key = AESCipher(password).decrypt(prk_from_server)
+        server_enc_key = RSACipher().decrypt(enc_key_from_server, user_private_key)
+        user_public_key = AESCipher(server_enc_key).decrypt(pbk_from_server)
         chats = []
         if "chats" in returned_from_server:
             for encrypted_chat in returned_from_server["chats"]:
-                from_server_chat = DecryptedChat(encrypted_chat, from_server_enc_key)
+                from_server_chat = DecryptedChat(encrypted_chat, server_enc_key, user_public_key)
                 chats.append(from_server_chat)
 
         return {
-            "private_key_to_store": from_server_prk,
-            "server_enc_key": from_server_enc_key,
-            "public_key": from_server_pbk,
+            "private_key_to_store": user_private_key,
+            "server_enc_key": server_enc_key,
+            "public_key": user_public_key,
             "chats": chats
         }
 
