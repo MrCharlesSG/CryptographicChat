@@ -12,15 +12,12 @@ class ChatRepository:
         # find users chat
         chats_to_return = []
         print("The chats ", chats)
-        aes_user = AESCipher(user.get_decrypted_server_enc_key(server_private_key))
         for chat in chats:
             if chat.user1_pbk_for_server == user_pbk_for_server:
                 enc_key_user = chat.enc_key_user1
                 participant_info = chat.participant_info_user2
                 messages = MessageRepository.getMessagesByChatID(chat.chat_id)
-                chat_id_encrypted = aes_user.encrypt(chat.chat_id)
-                enc_key_user = aes_user.encrypt(enc_key_user)
-                participant_info = aes_user.encrypt(participant_info)
+                chat_id_encrypted = AESCipher(user.get_decrypted_server_enc_key(server_private_key)).encrypt(chat.chat_id)
                 chat_to_add = {
                     "chat_info": {
                         "chat_id": chat_id_encrypted,
@@ -34,9 +31,7 @@ class ChatRepository:
                 enc_key_user = chat.enc_key_user2
                 participant_info = chat.participant_info_user1
                 messages = MessageRepository.getMessagesByChatID(chat.chat_id)
-                chat_id_encrypted = aes_user.encrypt(chat.chat_id)
-                enc_key_user = aes_user.encrypt(enc_key_user)
-                participant_info = aes_user.encrypt(participant_info)
+                chat_id_encrypted = AESCipher(user.get_decrypted_server_enc_key(server_private_key)).encrypt(chat.chat_id)
                 chat_to_add = {
                     "chat_info": {
                         "chat_id": chat_id_encrypted,

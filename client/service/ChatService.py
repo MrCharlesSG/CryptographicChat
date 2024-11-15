@@ -14,6 +14,7 @@ class ClientChatService:
         """
         prepare info to send
         1. encrypt usernames
+        2. create signature
         """
         encryption_sender = RSACipher.encrypt(username, server_public_key)
         encryption_receiver = AESCipher(server_enc_key).encrypt(other_party_username)
