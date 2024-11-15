@@ -65,17 +65,24 @@ class ServerChatService:
 
         chat_id_for_sender = aes_sender.encrypt(create_chat.chat_id)
         chat_id_for_receiver = aes_receiver.encrypt(create_chat.chat_id)
+
+        enc_key_for_sender = aes_sender.encrypt(create_chat.enc_key_user1)
+        enc_key_for_receiver = aes_receiver.encrypt(create_chat.enc_key_user2)
+
+        participant_info_for_sender = aes_sender.encrypt(create_chat.participant_info_user2)
+        participant_info_for_receiver = aes_receiver.encrypt(create_chat.participant_info_user2)
+
         return {
             "sender": {
                 "chat_id": chat_id_for_sender,
-                "enc_key": create_chat.enc_key_user1,
-                "participant_info": create_chat.participant_info_user2
+                "enc_key": enc_key_for_sender,
+                "participant_info": participant_info_for_sender
             },
             "receiver_username": user_receiver.username,
             "receiver": {
                 "chat_id": chat_id_for_receiver,
-                "enc_key": create_chat.enc_key_user2,
-                "participant_info": create_chat.participant_info_user1
+                "enc_key": enc_key_for_receiver,
+                "participant_info": participant_info_for_receiver
             }
         }
 

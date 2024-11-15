@@ -50,10 +50,10 @@ class DecryptedChat:
         chat_info_from_server = chat_from_server["chat_info"]
         server_aes = AESCipher(server_enc_key)
         self.chat_id = server_aes.decrypt(chat_info_from_server["chat_id"])
-        enc_key_encrypted = chat_info_from_server["enc_key"]
+        enc_key_encrypted = server_aes.decrypt(chat_info_from_server["enc_key"])
         self.enc_key = RSACipher.decrypt(enc_key_encrypted, user_prk)
         self.aes = AESCipher(self.enc_key)
-        participant_info_encrypted = chat_info_from_server["participant_info"]
+        participant_info_encrypted = server_aes.decrypt(chat_info_from_server["participant_info"])
         participant_info_decrypted = self.aes.decrypt(participant_info_encrypted)
         self.other_username, self.other_pbk = User.get_from_info(participant_info_decrypted)
         self.messages = []
