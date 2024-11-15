@@ -24,7 +24,7 @@ class ClientChatService:
         }
 
     @staticmethod
-    def receive_create_chat(chat_from_server, server_enc_key):
+    def receive_create_chat(chat_from_server, server_enc_key, user_private_key):
         """
         decrypt create_chat response
         1. check server-signature
@@ -33,7 +33,7 @@ class ClientChatService:
         """
         # use to chek signature
         print("Chat from server ", chat_from_server)
-        decrypted_chat = DecryptedChat({"chat_info": chat_from_server}, server_enc_key, None)
+        decrypted_chat = DecryptedChat({"chat_info": chat_from_server}, server_enc_key, None, user_private_key)
         return decrypted_chat
 
     @staticmethod

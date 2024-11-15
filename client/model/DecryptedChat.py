@@ -45,13 +45,13 @@ class DecryptedMessage:
 
 
 class DecryptedChat:
-    def __init__(self, chat_from_server, server_enc_key, user_pbk):
+    def __init__(self, chat_from_server, server_enc_key, user_pbk, user_prk):
         print(chat_from_server)
         chat_info_from_server = chat_from_server["chat_info"]
         server_aes = AESCipher(server_enc_key)
         self.chat_id = server_aes.decrypt(chat_info_from_server["chat_id"])
         enc_key_encrypted = chat_info_from_server["enc_key"]
-        self.enc_key = server_aes.decrypt(enc_key_encrypted)
+        self.enc_key = RSACipher.decrypt(enc_key_encrypted, user_prk)
         self.aes = AESCipher(self.enc_key)
         participant_info_encrypted = chat_info_from_server["participant_info"]
         participant_info_decrypted = self.aes.decrypt(participant_info_encrypted)

@@ -47,7 +47,7 @@ class ClientAuthService:
         chats = []
         if "chats" in returned_from_server:
             for encrypted_chat in returned_from_server["chats"]:
-                from_server_chat = DecryptedChat(encrypted_chat, server_enc_key, user_public_key)
+                from_server_chat = DecryptedChat(encrypted_chat, server_enc_key, user_public_key, user_private_key)
                 chats.append(from_server_chat)
 
         return {

@@ -199,7 +199,8 @@ def create_chat():
         response = requests.post(f"{API_SERVER_URL}/api/create-chat", json=to_send)
         print("response ", response)
         if response.status_code == 200:
-            decrypted_chat = ClientChatService.receive_create_chat(response.json(), session["server_enc_key"])
+            decrypted_chat = ClientChatService.receive_create_chat(response.json(), session["server_enc_key"],
+                                                                   session["private_key_to_store"])
             session["chats"][decrypted_chat.chat_id] = decrypted_chat.to_dict()
             print("The new chat in chats ", session["chats"][decrypted_chat.chat_id])
             return jsonify({"success": True}), 200
@@ -243,11 +244,12 @@ Socket
 
 @server_sio.on("new-chat")
 def handle_new_chat(data):
-    decrypted_chat = ClientChatService.receive_create_chat(data, session["server_enc_key"])
+    decrypted_chat = ClientChatService.receive_create_chat(data, session["server_enc_key"],
+                                                           session["private_key_to_store"])
     session["chats"][decrypted_chat.chat_id] = decrypted_chat.to_dict()
     print("New chat received:", decrypted_chat.to_dict())
-    #frontend_sio.emit("new-chat")
-    frontend_sio.emit("update-chats", {"message" :"new chat"})
+    # frontend_sio.emit("new-chat")
+    frontend_sio.emit("update-chats", {"message": "new chat"})
 
 
 @server_sio.on("new-message")
@@ -259,8 +261,8 @@ def handle_new_message(data):
     chat_with_id.add_new_message(text, sender, date)
     session["chats"][chat_with_id.chat_id] = chat_with_id.to_dict()
     print("The new message in chat socket", session["chats"][chat_with_id.chat_id])
-    #frontend_sio.emit("new-message")
-    frontend_sio.emit("update-messages", {"message" :"new message"})
+    # frontend_sio.emit("new-message")
+    frontend_sio.emit("update-messages", {"message": "new message"})
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ import os
 
 from cipher.PBKDF2Cipher import PBKDF2Cipher
 from cipher.AESCipher import AESCipher
+from cipher.RSACipher import RSACipher
 from server.model.User import User
 
 
@@ -15,12 +16,11 @@ class Chat:
                                                      server_private_key).derive()
             enc_key = AESCipher.generateKey()
             print("the key in chat of ", user_1.username, " is ", enc_key)
-            self.enc_key_user1 = AESCipher(user_1.get_decrypted_server_enc_key()).encrypt(enc_key)
-            self.enc_key_user2 = AESCipher(user_2.get_decrypted_server_enc_key()).encrypt(enc_key)
+            self.enc_key_user1 = RSACipher.encrypt(enc_key, user_1.public_key)
+            self.enc_key_user2 = RSACipher.encrypt(enc_key, user_2.public_key)
             aes = AESCipher(enc_key)
             self.participant_info_user1 = aes.encrypt(user_1.get_info())
             self.participant_info_user2 = aes.encrypt(user_2.get_info())
-            self.enc_key_real = enc_key
 
     @staticmethod
     def create_chat(user1_pbk_for_server, user2_pbk_for_server, user_1: User, user_2: User):
@@ -29,17 +29,16 @@ class Chat:
         chat.user2_pbk_for_server = user2_pbk_for_server
         enc_key = AESCipher.generateKey()
         print("the key in chat of ", user_1.username, " is ", enc_key)
-        chat.enc_key_user1 = AESCipher(user_1.get_decrypted_server_enc_key()).encrypt(enc_key)
-        chat.enc_key_user2 = AESCipher(user_2.get_decrypted_server_enc_key()).encrypt(enc_key)
+        chat.enc_key_user1 = RSACipher.encrypt(enc_key, user_1.public_key)
+        chat.enc_key_user2 = RSACipher.encrypt(enc_key, user_2.public_key)
         aes = AESCipher(enc_key)
         chat.participant_info_user1 = aes.encrypt(user_1.get_info())
         chat.participant_info_user2 = aes.encrypt(user_2.get_info())
-        chat.enc_key_real = enc_key
         return chat
 
     def get_chat_str(self, user: User, is_first=True):
         enc_key = ""
-        if (is_first):
+        if is_first:
             enc_key = AESCipher(user.decrypted_server_enc_key).decrypt(self.enc_key_user1)
         else:
             enc_key = AESCipher(user.decrypted_server_enc_key).decrypt(self.enc_key_user2)
@@ -59,7 +58,6 @@ class Chat:
             "enc_key_user2": self.enc_key_user2,
             "participant_info_user1": self.participant_info_user1,
             "participant_info_user2": self.participant_info_user2,
-            "enc_key_real": self.enc_key_real,
             "user1_pbk_for_server": self.user1_pbk_for_server,
             "user2_pbk_for_server": self.user2_pbk_for_server,
         }
@@ -72,7 +70,6 @@ class Chat:
         chat.enc_key_user2 = data["enc_key_user2"]
         chat.participant_info_user1 = data["participant_info_user1"]
         chat.participant_info_user2 = data["participant_info_user2"]
-        chat.enc_key_real = data["enc_key_real"]
         chat.user1_pbk_for_server = data["user1_pbk_for_server"]
         chat.user2_pbk_for_server = data["user2_pbk_for_server"]
         return chat
