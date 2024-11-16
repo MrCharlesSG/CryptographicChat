@@ -1,9 +1,60 @@
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
+- [Cryptography](#cryptography)
+- [Introduction](#introduction)
+   * [The CIA Triad](#the-cia-triad)
+   * [Terminology](#terminology)
+      + [Threat Consequences](#threat-consequences)
+      + [Examples of Threats](#examples-of-threats)
+   * [Security Implementation](#security-implementation)
+   * [CIANA](#ciana)
+- [Block Ciphers](#block-ciphers)
+   * [Effects of Modifying a Ciphertext Block](#effects-of-modifying-a-ciphertext-block)
+- [SSL and Symmetric Encryption](#ssl-and-symmetric-encryption)
+   * [SSL](#ssl)
+   * [Symmetric Encryption](#symmetric-encryption)
+      + [Types](#types)
+      + [Requirements for the Secret Key](#requirements-for-the-secret-key)
+      + [Symmetric Ciphers](#symmetric-ciphers)
+      + [OTP](#otp)
+      + [What makes a good cipher?](#what-makes-a-good-cipher)
+   * [Stream Cipher](#stream-cipher)
+   * [LAB: Encrypt and Decrypt using AES and CBC](#lab-encrypt-and-decrypt-using-aes-and-cbc)
+   * [Symmetric Encryption Algorithms](#symmetric-encryption-algorithms)
+      + [DES (Data Encryption Standard)](#des-data-encryption-standard)
+      + [Triple DES](#triple-des)
+      + [AES (Advance Encryption Standard)](#aes-advance-encryption-standard)
+- [Integrity Preservation](#integrity-preservation)
+   * [When Integrity is the Sole Concern](#when-integrity-is-the-sole-concern)
+      + [MAC (Message Authentication Code)](#mac-message-authentication-code)
+   * [Hash Functions](#hash-functions)
+      + [Characteristics of Hash Functions](#characteristics-of-hash-functions)
+      + [Hash Functions in Practice](#hash-functions-in-practice)
+      + [Example of Hashing a Message in Code](#example-of-hashing-a-message-in-code)
+   * [LAB: Integrity Message](#lab-integrity-message)
+- [Symmetric vs. Asymmetric Encryption](#symmetric-vs-asymmetric-encryption)
+   * [Symmetric Encryption](#symmetric-encryption-1)
+   * [Asymmetric Encryption (Public-Key Cryptography)](#asymmetric-encryption-public-key-cryptography)
+   * [Digital Envelopes](#digital-envelopes)
+   * [Public Key Infrastructure (PKI) and Certificate Authorities (CAs)](#public-key-infrastructure-pki-and-certificate-authorities-cas)
+      + [What is PKI?](#what-is-pki)
+      + [Key Components of PKI:](#key-components-of-pki)
+      + [How PKI Works with Certificate Authorities:](#how-pki-works-with-certificate-authorities)
+      + [Example](#example)
+      + [Benefits of PKI and CAs:](#benefits-of-pki-and-cas)
+- [RSA (Rivest, Shamir, Adleman)](#rsa-rivest-shamir-adleman)
+
+<!-- TOC end -->
+
+<!-- TOC --><a name="cryptography"></a>
 # Cryptography
 
+<!-- TOC --><a name="introduction"></a>
 # Introduction
 
 Computer Security is defined by the NIST as the protection afforded to an automated information system in order to attain the applicable objectives of preserving the integrity, availability and confidentiality of information system resources
 
+<!-- TOC --><a name="the-cia-triad"></a>
 ## The CIA Triad
 
 1. Confidentiality → permissions, only the people that is allow to see the data can actually see the data
@@ -16,6 +67,7 @@ At the end we want to follow the key atributes of CIANA:
 2. Non-repudiation → a user cannot deny (repudiate) having performed a transaction
 3. Authentication
 
+<!-- TOC --><a name="terminology"></a>
 ## Terminology
 
 - **Adversary (thread agent)** → an entity that attacks, or is a thread to, a system.
@@ -34,8 +86,10 @@ At the end we want to follow the key atributes of CIANA:
     - leaky (loss of confidentiality)
     - unavailable of very slow (loss of availability)
 
-![image.png](image.png)
+![image](https://github.com/user-attachments/assets/526e6cf3-70c4-4845-ad2e-d86bc4b404b1)
 
+
+<!-- TOC --><a name="threat-consequences"></a>
 ### Threat Consequences
 
 | **Threat Consequence** | **Threat Action (attack)** |
@@ -63,6 +117,7 @@ Obstruction → A threat action that interrupts delivery of system services by h
 control of system services or functions by an unauthorized entity. | Misappropriation → An entity assumes unauthorized logical or physical control of a system resource.
 Misuse → Causes a system component to perform a function or service that is detrimental to system security. |
 
+<!-- TOC --><a name="examples-of-threats"></a>
 ### Examples of Threats
 
 |  | Availability | Confidentiality | Integrity |
@@ -95,6 +150,7 @@ duplicated. False
 messages are
 fabricated. |
 
+<!-- TOC --><a name="security-implementation"></a>
 ## Security Implementation
 
 Involves four complementary courses of actions:
@@ -110,6 +166,7 @@ Involves four complementary courses of actions:
     - Secure encryption algorithms
     - Prevent unauthorized access to encryption keys
 
+<!-- TOC --><a name="ciana"></a>
 ## CIANA
 
 IA (Information Assurance) is the practice of managing risks while maintaining CIANA properties
@@ -131,12 +188,12 @@ IA (Information Assurance) is the practice of managing risks while maintaining C
     - **Example 2**: A company’s internal system doesn’t verify users with multi-factor authentication (MFA), allowing anyone with a password to access sensitive data. This weakens authentication since it lacks a robust verification process, making it easier for unauthorized users to gain access.
 
 <aside>
-<img src="https://www.notion.so/icons/light-bulb_yellow.svg" alt="https://www.notion.so/icons/light-bulb_yellow.svg" width="40px" />
 
 Understanding something as an attack requires understanding which of the pillars has being violated.
 
 </aside>
 
+<!-- TOC --><a name="block-ciphers"></a>
 # Block Ciphers
 
 Block ciphers work by dividing data—whether it’s a document, file, or message—into fixed-size blocks and then encrypting each block individually. Different block cipher operation modes (or *chaining modes*) define how blocks are processed and linked to enhance security:
@@ -149,12 +206,13 @@ Block ciphers work by dividing data—whether it’s a document, file, or messag
 4. Output Feedback (OFB) → operates as a stream cipher, transforming block ciphers into a stream cipher approach.
 
 <aside>
-<img src="https://www.notion.so/icons/light-bulb_yellow.svg" alt="https://www.notion.so/icons/light-bulb_yellow.svg" width="40px" />
+
 
 The **randomness of the key** is essential in all block cipher modes. Since the encryption algorithm uses this key to control the transformation of data, the strength of encryption ultimately depends on keeping the key both random and secret. A strong, unpredictable key disrupts any attempts to deduce patterns or recover the original message, effectively making this randomness the core of encryption strength.
 
 </aside>
 
+<!-- TOC --><a name="effects-of-modifying-a-ciphertext-block"></a>
 ## Effects of Modifying a Ciphertext Block
 
 Let’s examine the outcome of flipping a single bit in the second ciphertext block in both ECB and CBC modes:
@@ -170,8 +228,10 @@ Let’s examine the outcome of flipping a single bit in the second ciphertext bl
 - **In ECB mode** → Only the second plaintext block will contain an error. Since ECB processes blocks independently, the modification in the second ciphertext block only affects its corresponding plaintext block. The rest of the plaintext remains intact.
 - **In CBC mode** → Both the second and third plaintext blocks will contain errors. Since CBC mode relies on the previous block's ciphertext for decryption, modifying the second ciphertext block disrupts the decryption of the second block and propagates errors into the third block. The remaining blocks beyond the third will decrypt correctly.
 
+<!-- TOC --><a name="ssl-and-symmetric-encryption"></a>
 # SSL and Symmetric Encryption
 
+<!-- TOC --><a name="ssl"></a>
 ## SSL
 
 Secure Socket Layer is the framework to secure, for instance, web traffic. Uses different methods of encryption to achieve specific goals. 
@@ -186,17 +246,20 @@ SSL involves two primary protocols to secure communications:
 1. **Handshake protocol →** establish a shared secret.
 2. **Send data →** send data using the shared secret.
 
+<!-- TOC --><a name="symmetric-encryption"></a>
 ## Symmetric Encryption
 
 Symmetric encryption is an essential component of SSL, used to secure data after the handshake. In symmetric encryption, both parties use the same secret key for encryption and decryption, making it efficient for rapid data transfer.
 
 Imaging we have Alice and Bob. Alice has the encryption machine and Bob has the decryption machine. Alice want to send a message to Bob, she will do `E(k, m) = c` and bob will get c and do `D(k, c) = m` . Both need the shame `k` to communicate. 
 
+<!-- TOC --><a name="types"></a>
 ### Types
 
 - Block Cipher
 - Stream Cipher
 
+<!-- TOC --><a name="requirements-for-the-secret-key"></a>
 ### Requirements for the Secret Key
 
 The key used in symmetric encryption must fulfill two criteria:
@@ -207,7 +270,7 @@ The key used in symmetric encryption must fulfill two criteria:
 The challenge is how do we exchange the key?
 
 <aside>
-<img src="https://www.notion.so/icons/light-bulb_yellow.svg" alt="https://www.notion.so/icons/light-bulb_yellow.svg" width="40px" />
+
 
 The encryption algorithms are publicly known. So is the key (`k`) the one that need to be secret
 
@@ -218,6 +281,7 @@ The encryption algorithms are publicly known. So is the key (`k`) the one that n
       2. Secure communication with stablished key
 > 
 
+<!-- TOC --><a name="symmetric-ciphers"></a>
 ### Symmetric Ciphers
 
 A cipher is defined as a pair of efficient algorithms (E, D), where: 
@@ -229,12 +293,13 @@ A cipher is defined as a pair of efficient algorithms (E, D), where:
 - `D -> k XOR c`
 
 <aside>
-<img src="https://www.notion.so/icons/light-bulb_yellow.svg" alt="https://www.notion.so/icons/light-bulb_yellow.svg" width="40px" />
+
 
 At the end we use DES, 3DES and AES operation instead of XOR that are a more complex version of XOR.
 
 </aside>
 
+<!-- TOC --><a name="otp"></a>
 ### OTP
 
 The **One-Time Pad (OTP)** is an encryption technique where the key is as long as the message itself, providing theoretically perfect security if the key is truly random and used only once. However:
@@ -242,6 +307,7 @@ The **One-Time Pad (OTP)** is an encryption technique where the key is as long a
 - If a large message is divided into blocks and encrypted with the same key, predictable patterns can emerge in the ciphertext, revealing information about the plaintext.
 - OTP is impractical for large messages since generating and securely sharing enormous keys is challenging.
 
+<!-- TOC --><a name="what-makes-a-good-cipher"></a>
 ### What makes a good cipher?
 
 A good cipher should meet the following criteria:
@@ -253,6 +319,7 @@ A good cipher should meet the following criteria:
 
 This means that given the cipher text, you cannot tell if the msg is m0 or mi for a given `c` without knowing the `k`. 
 
+<!-- TOC --><a name="stream-cipher"></a>
 ## Stream Cipher
 
 Pseudo random number is a number of size `n` generated by an algorithm that is meant to be as random as possible. The idea in the stream cipher is to replace the totally random key from the OTP with a pseudo random key.
@@ -261,6 +328,7 @@ PRG ⇒ pseudo random generator, takes a seed so that the function maps the seed
 
 In the Stream Cipher each bit of the text is encrypted at a time with the corresponding digit of the key.
 
+<!-- TOC --><a name="lab-encrypt-and-decrypt-using-aes-and-cbc"></a>
 ## LAB: Encrypt and Decrypt using AES and CBC
 
 In this lab we will do AES as it would be XOR. The lab consist in encrypt and decrypt an image with CBC.
@@ -339,6 +407,7 @@ The  [How to Encrypt an Image in Python using AES Algorithm](https://pyseek.com/
     ```
     
 
+<!-- TOC --><a name="symmetric-encryption-algorithms"></a>
 ## Symmetric Encryption Algorithms
 
 |  | DES (Data Encryption Standard) | Triple DES | AES (Advance Encryption Standard) |
@@ -347,6 +416,7 @@ The  [How to Encrypt an Image in Python using AES Algorithm](https://pyseek.com/
 | Ciphertext block size (bits) | 64 | 64 | 128 |
 | Key size (bits) | 56 | 122 or 168 | 128, 192 or 246 |
 
+<!-- TOC --><a name="des-data-encryption-standard"></a>
 ### DES (Data Encryption Standard)
 
 - The most widely used encryption scheme
@@ -354,6 +424,7 @@ The  [How to Encrypt an Image in Python using AES Algorithm](https://pyseek.com/
     - DES es the most studied encryption algorithm in existence
     - use of 56-bit key → Electronic Frontier Foundation (EFF) announced in July 1998 that it had broken a DES encryption
 
+<!-- TOC --><a name="triple-des"></a>
 ### Triple DES
 
 - repeats basic DES algorithm three times using either two or three unique keys
@@ -364,6 +435,7 @@ The  [How to Encrypt an Image in Python using AES Algorithm](https://pyseek.com/
 - drawbacks:
     - algorithm slow down the software
 
+<!-- TOC --><a name="aes-advance-encryption-standard"></a>
 ### AES (Advance Encryption Standard)
 
 - 3DES needed a replacement since was not reasonable for long term use
@@ -375,10 +447,12 @@ The  [How to Encrypt an Image in Python using AES Algorithm](https://pyseek.com/
 - Selected Rijndael in November 2001
 - Has been updating over time.
 
+<!-- TOC --><a name="integrity-preservation"></a>
 # Integrity Preservation
 
 While **symmetric encryption** is primarily focused on preserving **confidentiality** by ensuring only authorized parties can read the data, **integrity** is addressed through hashing and message authentication codes (MACs). Integrity in cryptography ensures that data has not been altered or tampered with during transmission or storage.
 
+<!-- TOC --><a name="when-integrity-is-the-sole-concern"></a>
 ## When Integrity is the Sole Concern
 
 In certain cases, the confidentiality of data is not a concern—only the integrity of the message is. Examples include publicly accessible content, such as:
@@ -388,6 +462,7 @@ In certain cases, the confidentiality of data is not a concern—only the integr
 
 In such cases, instead of encrypting the data, we use integrity-preserving methods, such as hashing, to verify that the data remains unaltered.
 
+<!-- TOC --><a name="mac-message-authentication-code"></a>
 ### MAC (Message Authentication Code)
 
 A **Message Authentication Code (MAC)** provides a way to check the integrity and authenticity of a message. A MAC is a tag attached to a message to confirm that it has not been tampered with and originates from an authentic source.
@@ -396,10 +471,12 @@ For example, if Alice wants to send a message mmm to Bob and ensure its integrit
 
 This tag accompanies the message so that Bob, upon receiving message and the MAC, can verify whether the message remains unchanged by recalculating the MAC and comparing it to the received tag.
 
+<!-- TOC --><a name="hash-functions"></a>
 ## Hash Functions
 
 A **hash function** is a fundamental cryptographic algorithm that maps data of arbitrary length (e.g., a file or a message) to a fixed-length, unique output. This output, known as a **hash** or **digest**, serves as a fingerprint for the original data.
 
+<!-- TOC --><a name="characteristics-of-hash-functions"></a>
 ### Characteristics of Hash Functions
 
 1. **Fixed-Length Output**: Regardless of the input size, a hash function produces a fixed-length output. For instance, the SHA-256 hash function always generates a 256-bit hash.
@@ -410,6 +487,7 @@ A **hash function** is a fundamental cryptographic algorithm that maps data of a
 
 Hash functions are also used for applications like detecting malware. For instance, antivirus software may use a list of hashes corresponding to known malware signatures. However, viruses can evade detection by altering a single bit in the code, resulting in a completely new hash that avoids blacklist detection.
 
+<!-- TOC --><a name="hash-functions-in-practice"></a>
 ### Hash Functions in Practice
 
 To understand how a hash function works, let’s break down the steps:
@@ -419,6 +497,7 @@ To understand how a hash function works, let’s break down the steps:
 3. **Iterative Processing**: The hash function processes each block in sequence, applying a series of transformations.
 4. **Hash Output**: For an n-bit block size, the hash function ultimately produces an n-bit digest.
 
+<!-- TOC --><a name="example-of-hashing-a-message-in-code"></a>
 ### Example of Hashing a Message in Code
 
 The following is a simplified example of a hash function’s implementation in pseudocode:
@@ -441,6 +520,7 @@ return temp_block
 
 The choice of hash algorithm balances **security** (e.g., resistance to collisions) and **performance** (e.g., processing speed). Algorithms like SHA-256 are commonly used in secure applications due to their robustness and efficiency.
 
+<!-- TOC --><a name="lab-integrity-message"></a>
 ## LAB: Integrity Message
 
 The lab simulate the sending of a message. The message should be send with a mac, with the probability of 50% modify the message or not, and receive the message and verify its integrity
@@ -514,10 +594,12 @@ The lab simulate the sending of a message. The message should be send with a mac
     ```
     
 
+<!-- TOC --><a name="symmetric-vs-asymmetric-encryption"></a>
 # Symmetric vs. Asymmetric Encryption
 
 Type of encryption that uses 2 keys. *Symmetric* encryption covers *confidentiality* and  *integrity.* On the other side *asymmetric encryption* covers authentication and non-repudiation.
 
+<!-- TOC --><a name="symmetric-encryption-1"></a>
 ## Symmetric Encryption
 
 In *symmetric*  encryption we have the following pros and cons (Zelda is the attacker and Bob and Alice the ones that want to share data):
@@ -534,6 +616,7 @@ In *symmetric*  encryption we have the following pros and cons (Zelda is the att
 > The fundamental limitation of symmetric (secret key) encryption is… how do two parties agree on the key?
 > 
 
+<!-- TOC --><a name="asymmetric-encryption-public-key-cryptography"></a>
 ## Asymmetric Encryption (Public-Key Cryptography)
 
 In ***symmetric (public key) cryptography***, both communicating parties have two keys of their own. 
@@ -544,13 +627,14 @@ In ***symmetric (public key) cryptography***, both communicating parties have tw
 The magic of public cryptography is that a message encrypted with the public key can only be decrypted with the private key.
 
 <aside>
-<img src="https://www.notion.so/icons/light-bulb_yellow.svg" alt="https://www.notion.so/icons/light-bulb_yellow.svg" width="40px" />
+
 
 If you encrypt something with private key, can be decrypted with the public key
 
 </aside>
 
-![Diagram of how symmetric (public key) cryptography.](image%201.png)
+![image 1](https://github.com/user-attachments/assets/b4910f24-02bb-4ab7-9954-661271e6b4a1)
+
 
 Diagram of how symmetric (public key) cryptography.
 
@@ -565,10 +649,12 @@ Bob can decrypt any message that is encrypted with his public key, but…. How c
     - Bob first decrypts the message with **Alice’s public key** to verify her identity (authentication).
     - He then decrypts it with **his own private key** to access the original content (confidentiality).
 
-![Diagram of how this final procedure works](image%202.png)
+![image 2](https://github.com/user-attachments/assets/791fcd0c-d761-4b7e-adae-e4811200e93c)
+
 
 Diagram of how this final procedure works
 
+<!-- TOC --><a name="digital-envelopes"></a>
 ## Digital Envelopes
 
 Protects a message without needing to first arrange for sender and receiver to have the same secrete key.
@@ -586,14 +672,17 @@ Protects a message without needing to first arrange for sender and receiver to h
 
 This way both have the  Random Symmetric Key and a message.
 
-![Untitled Diagram-Page-2.jpg](Untitled_Diagram-Page-2.jpg)
+![Untitled_Diagram-Page-2](https://github.com/user-attachments/assets/9abf08e6-e38a-456e-bc34-285e2f38c74c)
 
+<!-- TOC --><a name="public-key-infrastructure-pki-and-certificate-authorities-cas"></a>
 ## Public Key Infrastructure (PKI) and Certificate Authorities (CAs)
 
+<!-- TOC --><a name="what-is-pki"></a>
 ### What is PKI?
 
 **Public Key Infrastructure (PKI)** is a framework that enables secure, encrypted communication and authentication on a large scale, primarily by managing public-key encryption. PKI uses pairs of cryptographic keys—public and private—and relies on trusted entities known as **Certificate Authorities (CAs)** to issue and verify digital certificates that associate public keys with specific entities, like individuals, devices, or websites.
 
+<!-- TOC --><a name="key-components-of-pki"></a>
 ### Key Components of PKI:
 
 1. **Certificate Authority (CA)**: The trusted organization that issues and manages digital certificates, verifying the identity of certificate requestors.
@@ -601,6 +690,7 @@ This way both have the  Random Symmetric Key and a message.
 3. **Registration Authority (RA)**: Acts as a mediator for the CA, verifying the identity of entities requesting a certificate and then sending requests to the CA for certificate issuance.
 4. **Certificate Revocation List (CRL)**: A list maintained by the CA containing certificates that have been revoked before their expiration date.
 
+<!-- TOC --><a name="how-pki-works-with-certificate-authorities"></a>
 ### How PKI Works with Certificate Authorities:
 
 1. **Key Generation**:
@@ -628,6 +718,7 @@ This way both have the  Random Symmetric Key and a message.
     - **Certificate Revocation**: If a certificate is compromised or no longer trustworthy, the CA can revoke it. Users and systems can then check the CRL or an Online Certificate Status Protocol (OCSP) to verify the certificate’s validity in real time.
     - **Renewal and Expiration**: Certificates are issued with an expiration date, after which they are no longer trusted. Entities need to renew their certificates regularly to maintain secure communication.
 
+<!-- TOC --><a name="example"></a>
 ### Example
 
 Bob try to connect with Alice
@@ -644,8 +735,10 @@ Bob try to connect with Alice
     2. Decrypt the `Signed Certificate` and get the `HASH2`
     3. Compare the `HASH2` with `HASH1` (received from **Bob), if they match, Alice is talking with Bob, otherwise no.**
 
-![Untitled Diagram.jpg](Untitled_Diagram.jpg)
+![Untitled_Diagram](https://github.com/user-attachments/assets/4348cfde-5048-4c6c-8000-b8fa7c253e34)
 
+
+<!-- TOC --><a name="benefits-of-pki-and-cas"></a>
 ### Benefits of PKI and CAs:
 
 - **Authentication**: Ensures that the entity using the certificate is genuine (e.g., a website or organization).
@@ -653,12 +746,13 @@ Bob try to connect with Alice
 - **Integrity**: The CA's signature and the structure of the digital certificate prevent tampering, ensuring that the public key is securely bound to the entity’s identity.
 - **Non-repudiation**: Entities cannot deny ownership of a message signed with their private key since the public key in their certificate verifies it.
 
+<!-- TOC --><a name="rsa-rivest-shamir-adleman"></a>
 # RSA (Rivest, Shamir, Adleman)
 
 Most widely accepted and implemented approach to public-key encryption
 
 <aside>
-<img src="https://www.notion.so/icons/light-bulb_yellow.svg" alt="https://www.notion.so/icons/light-bulb_yellow.svg" width="40px" />
+
 
 Elliptic curve cryptography (ECC) is other asymmetric encryption algorithm, securely like RSA, but with much smaller keys.
 
