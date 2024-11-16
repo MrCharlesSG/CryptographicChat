@@ -1,7 +1,34 @@
+<!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
+
+   * [Introduction](#introduction)
+      + [Problem to Solve](#problem-to-solve)
+         - [Impact on CIANA Pentagon](#impact-on-ciana-pentagon)
+      + [User Stories](#user-stories)
+   * [Solution](#solution)
+      + [System Overview](#system-overview)
+      + [User Data in the Database](#user-data-in-the-database)
+      + [Chat Representation](#chat-representation)
+      + [Key Cryptographic Concepts](#key-cryptographic-concepts)
+      + [Secure Communication with the Server](#secure-communication-with-the-server)
+      + [Registration Process](#registration-process)
+      + [Chat Creation](#chat-creation)
+      + [Sending Messages](#sending-messages)
+      + [Impact of the Solution on the CIANA Pentagon](#impact-of-the-solution-on-the-ciana-pentagon)
+   * [Ciphers](#ciphers)
+   * [Risks](#risks)
+   * [Future](#future)
+   * [Getting Started](#getting-started)
+      + [Repository Structure](#repository-structure)
+
+<!-- TOC end -->
+
+<!-- TOC --><a name="cryptographicchat"></a>
 # CryptographicChat
 
+<!-- TOC --><a name="introduction"></a>
 ## Introduction
 
+<!-- TOC --><a name="problem-to-solve"></a>
 ### Problem to Solve
 
 This project addresses the need for a secure, end-to-end backend system where only users involved in a conversation can access the content of their chats. Neither the server nor potential attackers can decipher the communication. The objective is to uphold the five pillars of CIANA, as defined by NIST: **Confidentiality**, **Integrity**, **Availability**, **Authentication**, and **Non-repudiation**.
@@ -17,6 +44,7 @@ The system is designed around three strict requirements:
 3. **Privacy and Security Against Zelda**:
     - If an external actor (Zelda) gains access to the database or intercepts server requests and responses, they must not be able to deduce who is communicating with whom or the content of the conversations. Zelda must also be unable to alter the chat data.
 
+<!-- TOC --><a name="impact-on-ciana-pentagon"></a>
 #### Impact on CIANA Pentagon
 
 This design ensures compliance with the CIANA pentagon suggested by NIST as follows:
@@ -27,6 +55,7 @@ This design ensures compliance with the CIANA pentagon suggested by NIST as foll
 4. **Authentication**: Only authenticated and registered users can participate in chats.
 5. **Non-repudiation**: Users cannot deny sending a message once it has been delivered.
 
+<!-- TOC --><a name="user-stories"></a>
 ### User Stories
 
 To provide a clear perspective on the system’s functionality, the following user stories have been defined:
@@ -37,10 +66,12 @@ To provide a clear perspective on the system’s functionality, the following us
 4. **Send Messages**: As a user, I want to send messages within an existing chat.
 5. **Register**: As a user, I want to register by providing my name, setting a provisional password, and receiving my private key.
 
+<!-- TOC --><a name="solution"></a>
 ## Solution
 
 To grasp the proposed solution, it’s essential to first understand the problem thoroughly. The challenge lies in the fact that an adversary, referred to as Zelda, has access to virtually everything: requests and responses, sockets, and database connections. Despite this, the application needs to function like any conventional system, using familiar concepts like usernames and passwords.
 
+<!-- TOC --><a name="system-overview"></a>
 ### System Overview
 
 The integration of cryptography into real-world applications is inherently complex. This project addresses the challenge with the following key elements:
@@ -58,6 +89,7 @@ The integration of cryptography into real-world applications is inherently compl
 
 System Overview
 
+<!-- TOC --><a name="user-data-in-the-database"></a>
 ### User Data in the Database
 
 For each user, the database contains:
@@ -66,6 +98,7 @@ For each user, the database contains:
 - **Public Key and Username**: Publicly accessible.
 - **Symmetric Encryption Key**: Used for server communication, encrypted with the server’s public key.
 
+<!-- TOC --><a name="chat-representation"></a>
 ### Chat Representation
 
 Chats are represented as follows:
@@ -81,11 +114,13 @@ Messages in the database are structured as:
 - **Message Info**: Includes the sender’s username, timestamp, and text, encrypted with the chat encryption key.
 - **Signature**: The message info, signed by the sender’s private key. This ensures the integrity of the message and verifies its origin.
 
+<!-- TOC --><a name="key-cryptographic-concepts"></a>
 ### Key Cryptographic Concepts
 
 - **Asymmetric Encryption**: Data encrypted with a public key can only be decrypted by the corresponding private key (and vice versa).
 - **Digital Signature**: A message is hashed and encrypted with the sender's private key. Anyone with the public key can verify it, but only the sender could create it.
 
+<!-- TOC --><a name="secure-communication-with-the-server"></a>
 ### Secure Communication with the Server
 
 When a user logs in, the server provides a **digital envelope** containing all necessary credentials and data. This envelope includes:
@@ -102,10 +137,12 @@ When a user logs in, the server provides a **digital envelope** containing all n
 
 The user decrypts this information locally using their password, and checking out that the signature is correct.
 
+<!-- TOC --><a name="registration-process"></a>
 ### Registration Process
 
 During registration, the user sets a username and password. The server generates the required keys, encrypts them appropriately, and sends them to the user. The user confirms the password to decrypt the received data and complete the setup.
 
+<!-- TOC --><a name="chat-creation"></a>
 ### Chat Creation
 
 To create a chat, the initiating user sends:
@@ -115,6 +152,7 @@ To create a chat, the initiating user sends:
 
 The server decrypts this data, generates a unique chat ID and a chat encryption key, and stores them as outlined earlier. It then sends the chat information back to both users, ensuring only the participants can access it.
 
+<!-- TOC --><a name="sending-messages"></a>
 ### Sending Messages
 
 When sending a message, the user provides the following to the server:
@@ -126,6 +164,7 @@ When sending a message, the user provides the following to the server:
 
 The server processes the header and metadata to identify the sender and recipient but cannot decrypt the message itself. It stores the message and sends it to the recipient (if connected), including the signature for verification.
 
+<!-- TOC --><a name="impact-of-the-solution-on-the-ciana-pentagon"></a>
 ### Impact of the Solution on the CIANA Pentagon
 
 1. **Confidentiality.** User messages are encrypted using a unique **chat encryption key**, which is only accessible to the participants. This means only they can decrypt and read the messages. Neither the server nor unauthorized users (including attackers) can access the content.
@@ -134,6 +173,7 @@ The server processes the header and metadata to identify the sender and recipien
 4. **Authentication.** Each user has a unique public-private key pair and a encryption, and only registered users with a valid password can retrieve and use their private key. The server issues signed digital envelopes to authenticate users at the start of each session. These contain encrypted user credentials and session keys, further ensuring that only legitimate users can participate.
 5. **Non-repudiation.** Messages are signed using the sender’s private key, which binds the sender to the message. Since only the sender holds the private key, they cannot deny having sent the message once it is signed and received by the other participant. 
 
+<!-- TOC --><a name="ciphers"></a>
 ## Ciphers
 
 The ciphers user are:
@@ -149,6 +189,7 @@ The ciphers user are:
     - Used for the derivation of cryptographic hashes for participant data, such as generating unique identifiers (hashes) for users in chats.
     - Combines HMAC (Hash-based Message Authentication Code) with **SHA-256** for secure hash computation.
 
+<!-- TOC --><a name="risks"></a>
 ## Risks
 
 1. **Compromise of User Password**
@@ -176,6 +217,7 @@ The ciphers user are:
     - **Impact**: leakage of sensitive information to malicious users.
     - **Mitigation**: educate users to carefully verify the recipient's identity before sharing sensitive information. Implement clear user verification tools or visual indicators within the system to help distinguish between users with similar usernames. Permit users to report this kind of users and black-listing of users
 
+<!-- TOC --><a name="future"></a>
 ## Future
 
 While there are currently no specific plans for future changes, the system could evolve to include features and improvements that enhance usability, security, and scalability. Below are some potential ideas:
@@ -186,11 +228,13 @@ While there are currently no specific plans for future changes, the system could
 - Introduce a mechanism for users to report abusive or inappropriate behavior.
 - Audit logs and transparency tools
 
+<!-- TOC --><a name="getting-started"></a>
 ## Getting Started
 
 - To run a client instance  `/client/client-app.py`.
 - To run a server instance `/server/server-app.py`
 
+<!-- TOC --><a name="repository-structure"></a>
 ### Repository Structure
 
 - `cipher`: has all the ciphers used in the project. All cipher for encryption and decryption gets an string and return string, so its more abstract.
