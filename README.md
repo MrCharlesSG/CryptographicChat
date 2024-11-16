@@ -1,5 +1,5 @@
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
-
+# CryptographicChat
    * [Introduction](#introduction)
       + [Problem to Solve](#problem-to-solve)
          - [Impact on CIANA Pentagon](#impact-on-ciana-pentagon)
@@ -23,7 +23,7 @@
 <!-- TOC end -->
 
 <!-- TOC --><a name="cryptographicchat"></a>
-# CryptographicChat
+
 
 <!-- TOC --><a name="introduction"></a>
 ## Introduction
