@@ -1,5 +1,6 @@
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 
+# Cryptography
 - [Introduction](#introduction)
    * [The CIA Triad](#the-cia-triad)
    * [Terminology](#terminology)
@@ -46,7 +47,6 @@
 <!-- TOC end -->
 
 <!-- TOC --><a name="cryptography"></a>
-# Cryptography
 
 <!-- TOC --><a name="introduction"></a>
 # Introduction
