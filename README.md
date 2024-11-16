@@ -53,7 +53,8 @@ The integration of cryptography into real-world applications is inherently compl
     - The server also holds a public-private key pair and acts as a trusted authority.
     - Users communicate with the server using a symmetric key, which is encrypted with the server’s public key and stored securely in the database.
 
-![System Overview](Untitled_Diagram-Problem_Infografia.drawio.png)
+![Untitled_Diagram-Problem_Infografia drawio](https://github.com/user-attachments/assets/3cdca05b-3083-41e6-845d-22fce84b63ff)
+
 
 System Overview
 
